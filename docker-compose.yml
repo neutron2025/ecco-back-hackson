@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 
+      MONGO_INITDB_ROOT_PASSWORD: 
+      MONGO_INITDB_DATABASE: 
+    volumes:
+      - mongodb_data2:/data/db
+    command: mongod --auth
+
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    environment:
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      # Redis 的密码设置在 redis.conf 配置文件中，而不是通过环境变量
+      # 因此，我们使用命令来启动 Redis 并设置密码
+    command: redis-server --save 60 1 --loglevel verbose --requirepass redispass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongodb_data2:
+  redis-data:

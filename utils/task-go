@@ -1,0 +1,33 @@
+package utils
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+)
+
+func ClearUnpaidOrders(ctx context.Context) {
+	ticker := time.NewTicker(15 * time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		db := GetDB()
+		fifteenMinutesAgo := time.Now().Add(-15 * time.Minute)
+
+		result, err := db.Collection("orders").DeleteMany(
+			context.Background(),
+			bson.M{
+				"created_at":     bson.M{"$lte": fifteenMinutesAgo},
+				"payment_status": "待支付",
+			},
+		)
+		if err != nil {
+			// 处理错误，例如记录日志
+			log.Printf("清除未支付订单时出错: %v", err)
+		} else {
+			log.Printf("已清除 %d 个未支付订单", result.DeletedCount)
+		}
+	}
+}
